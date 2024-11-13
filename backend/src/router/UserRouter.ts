@@ -3,7 +3,7 @@ import validate from "../helper/validate";
 import UserController from "../controller/UserController";
 import { signupSchema, signinSchema, updatePasswordSchema } from "../schema/UserSchema";
 import { authenticationToken } from "../middleware/ProtectRoute";
-
+ 
 class UserRoutes extends BaseRoutes {
     public routes(): void {
         this.router.post("/signup", validate(signupSchema) as any, UserController.signup);

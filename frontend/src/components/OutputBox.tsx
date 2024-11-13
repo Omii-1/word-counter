@@ -2,10 +2,11 @@
 
 interface OutputBoxProps {
     value: Record<string, number>;
-    allOutputs: string[];
 }
 
-export function OutputBox({ value, allOutputs }: OutputBoxProps) {
+export function OutputBox({ value }: OutputBoxProps) {
+
+    const allOutputs: string[] = ["WORDS", "CHARACTERS", "SENTENCES", "PARAGRAPHS"];
     
     return (
         <div className="flex gap-4 mb-6">

@@ -8,7 +8,7 @@ export const signupSchema = z.object({
         password: z.string().min(6, { message: "Password must be greater than 6 characters"})    
     })
 });
-
+ 
 // signin schema
 export const signinSchema = z.object({
     body: z.object({

@@ -1,4 +1,5 @@
 import express, { Application, Request, Response } from "express"
+import cors from "cors";
 import Database from "./config/database";
 import UserRouter from "./router/UserRouter";
 import TextRouter from "./router/TextRouter";
@@ -14,6 +15,11 @@ class App {
     }
 
     protected plugins(): void {
+        this.app.use(cors({
+            origin: "http://localhost:5173", // Allow requests from your frontend
+            methods: ["GET", "POST", "PUT", "DELETE", "PATCH"], // Allow methods
+            allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
+        }));
         this.app.use(express.json())
         this.app.use(express.urlencoded({ extended: true }))
     }

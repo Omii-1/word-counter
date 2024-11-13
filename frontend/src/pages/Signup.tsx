@@ -1,55 +1,126 @@
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, ChangeEvent, FormEvent } from "react";
+import axios from "axios"
+import { useDispatch } from "react-redux"
+import { toast } from "react-hot-toast";
+
+import { authActions } from "../store/auth";
 
 interface SignupData {
-  username: string;
+  userName: string;
   email: string;
   password: string;
   confirmPassword: string;
 }
 
+interface SignupResponse {
+  message: string;
+  msg: string;
+  role: string;
+  id: string;
+  token: string;
+}
+
 export function Signup() {
+
   const navigate = useNavigate();
-  const [ signupData, setSignupData] = useState<SignupData>({
-    username: "",
+  const dispatch = useDispatch()
+
+  const [signupData, setSignupData] = useState<SignupData>({
+    userName: "",
     email: "",
     password: "",
     confirmPassword: ""
   })
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+
+  const change = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setSignupData({ ...signupData, [name]: value })
+  }
+  
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    console.log(signupData)
+
+    try {
+      if (
+        signupData.userName === "" ||
+        signupData.email === "" ||
+        signupData.password === "" ||
+        signupData.confirmPassword === "" 
+      ) {
+        toast.error("Fill all values");
+      } else if(
+        signupData.password !==
+        signupData.confirmPassword 
+      ) {
+        toast.error("Password and Confirm Password are different.")
+      } else {
+        const res = await axios.post<SignupResponse>(`${import.meta.env.VITE_USER_BACKEND_URL}/signup`, signupData)
+        
+        toast.success(res.data.message);
+
+        dispatch(authActions.login())
+        dispatch(authActions.changeRole(res.data.role))
+
+        localStorage.setItem("id", res.data.id)
+        localStorage.setItem("token", res.data.token)
+        localStorage.setItem("role", res.data.role)
+
+        navigate("/")
+      }
+    } catch (err: any) {
+      if (err.response && err.response.data) {
+        // Check if the error has a `message` array (Zod or similar validation errors)
+        if (Array.isArray(err.response.data.message) && err.response.data.message.length > 0) {
+          const firstError = err.response.data.message[0]?.message;
+          toast.error(firstError || "Validation failed with an error.");
+        } else if (err.response.data.msg) {
+          // Handle other possible error messages
+          toast.error(err.response.data.msg);
+        } else {
+          toast.error("An unexpected error occurred. Please try again.");
+        }
+      } else {
+        toast.error("An unexpected error occurred. Please try again.");
+      }
+      navigate('/signup');
+  
+    }
   }
 
   return (
     <form className="w-full max-w-sm p-6 border rounded-lg shadow-md bg-gray-100" onSubmit={handleSubmit}>
       <div className="flex flex-col mb-4 gap-2">
-        <label htmlFor="username" className="text-blue-500 text-2xl font-medium">Username</label>
-        <input type="text" id="username" className="border p-2 w-full border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
-        value={signupData.username}
-        onChange={ (e) => setSignupData({...signupData, username: e.target.value})}/>
+        <label htmlFor="userName" className="text-blue-500 text-2xl font-medium">Username</label>
+        <input type="text" id="userName" className="border p-2 w-full border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          name="userName"
+          value={signupData.userName}
+          onChange={change} />
       </div>
 
       <div className="flex flex-col mb-4 gap-2">
         <label htmlFor="email" className="text-blue-500 text-2xl font-medium">Email</label>
-        <input type="text" id="email" className="border p-2 w-full border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
-        value={signupData.email}
-        onChange={ (e) => setSignupData({...signupData, email: e.target.value})}/>
+        <input type="text" id="email" className="border p-2 w-full border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          name="email"
+          value={signupData.email}
+          onChange={change} />
       </div>
 
       <div className="flex flex-col mb-4 gap-2">
         <label htmlFor="password" className="text-blue-500 text-2xl font-medium">Password</label>
-        <input type="password" id="password" className="border p-2 w-full border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
-        value={signupData.password}
-        onChange={ (e) => setSignupData({...signupData, password: e.target.value})}/>
+        <input type="password" id="password" className="border p-2 w-full border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          value={signupData.password}
+          name="password"
+          onChange={change} />
       </div>
 
       <div className="flex flex-col mb-4 gap-2">
         <label htmlFor="confirmPassword" className="text-blue-500 text-2xl font-medium">Confirm Password</label>
-        <input type="password" id="confirmPassword" className="border p-2 w-full border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
-        value={signupData.confirmPassword}
-        onChange={ (e) => setSignupData({...signupData, confirmPassword: e.target.value})}/>
+        <input type="password" id="confirmPassword" className="border p-2 w-full border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          value={signupData.confirmPassword}
+          name="confirmPassword"
+          onChange={change} />
       </div>
 
       <p
@@ -62,7 +133,7 @@ export function Signup() {
       <button className="bg-blue-500 text-white py-2 px-4 rounded-lg shadow hover:bg-blue-600 transition duration-300 ease-in-out w-full text-2xl" type="submit">
         Signup
       </button>
-      
+
     </form>
   );
 }

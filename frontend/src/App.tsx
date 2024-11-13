@@ -1,6 +1,10 @@
 import {Routes, Route, useLocation} from "react-router-dom"
-import './App.css'
+import { useEffect } from "react"
+import { Toaster } from 'react-hot-toast';
 
+import './App.css'
+import { useDispatch, useSelector } from "react-redux"
+import { authActions } from "./store/auth"
 import { Navbar } from "./components/Navbar"
 import {Home} from "./pages/Home"
 import {Signup} from "./pages/Signup"
@@ -8,6 +12,17 @@ import {Signin} from "./pages/Signin"
 import {Profile} from "./pages/Profile"
 
 function App(): JSX.Element {
+
+  const dispatch = useDispatch()
+  const role = useSelector((state) => state.auth.role) 
+
+  useEffect(() => {
+    if(localStorage.getItem("id") && localStorage.getItem("token") && localStorage.getItem("role")){
+      dispatch(authActions.login())
+      dispatch(authActions.changeRole(localStorage.getItem("role")))
+    }
+  }, []) 
+
   const location = useLocation()
   const needsCenter = ['/signin', '/signup'].includes(location.pathname)
 
@@ -20,8 +35,13 @@ function App(): JSX.Element {
           <Route path="/" element={ <Home />} />
           <Route path="/signup" element={ <Signup />} />
           <Route path="/signin" element={ <Signin />} />
-          <Route path="/profile" element={ <Profile />} />
+          <Route path="/profile" element={ <Profile />}>
+            {
+              role === "user" ? <></> : <></>
+            }
+          </Route>
         </Routes>
+        <Toaster />
       </div>
     </div>
   )

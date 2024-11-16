@@ -5,9 +5,7 @@ import * as dotenv from "dotenv"
 
 
 import { User } from "../model/User"
-import { Text } from "../model/Text";
 import { UserRepo } from "../repository/UserRepo";
-import { TextRepo } from "../repository/TextRepo";
 
 dotenv.config()
 
@@ -111,13 +109,19 @@ class UserController {
     // user change password
     async changePassword(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
+            const {userId} = req.params
 
-            const existingUser = (req as any).user
-            const userId = existingUser.id
+            if (isNaN(parseInt(userId))) {
+                res.status(400).json({
+                    status: "error",
+                    message: "Invalid user ID provided"
+                });
+                return;
+            }
             const { oldPassword, newPassword } = req.body;
 
             const userRepo = new UserRepo();
-            await userRepo.updatePassword(userId, oldPassword, newPassword);
+            await userRepo.updatePassword(parseInt(userId), oldPassword, newPassword);
 
             res.status(200).json({
                 status: "success",
@@ -166,8 +170,15 @@ class UserController {
     // delete the user with Userid and also delete texts which he created
     async deleteUser(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const existingUser = (req as any).user
-            const userId = existingUser.id
+            const {userId} = req.params
+
+            if (isNaN(parseInt(userId))) {
+                res.status(400).json({
+                    status: "error",
+                    message: "Invalid user ID provided"
+                });
+                return;
+            }
 
             const userRepo = new UserRepo();
             await userRepo.delete(parseInt(userId));

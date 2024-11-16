@@ -14,8 +14,8 @@ export const updateTextSchema = z.object({
         textId: z.string().regex(/^\d+$/, "textId must be a valid number").transform(Number)
     }),
     body: z.object({
-        newTitle: z.string().min(1, { message: "Title is required" }),
-        newDescription: z.string().optional()
+        newTitle: z.string().min(3, { message: "Title must be greater than 3 characters!" }),
+        newDescription: z.string().min(10, { message: "Description must be greater than 10 characters!" })
     })
 });
 

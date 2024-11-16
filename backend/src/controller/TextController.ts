@@ -2,14 +2,14 @@ import { NextFunction, Request, Response } from "express";
 import { Text } from "../model/Text";
 import { User } from "../model/User";
 import { TextRepo } from "../repository/TextRepo";
-import { UserRepo  } from "../repository/UserRepo";
+import { UserRepo } from "../repository/UserRepo";
 
 class TextController {
 
     // create a new text
     async createText(req: Request, res: Response, next: NextFunction): Promise<void> {
-        try{
-            const { title, description} = req.body;
+        try {
+            const { title, description } = req.body;
             const existingUser = (req as any).user
             const userId = existingUser.id
 
@@ -35,15 +35,15 @@ class TextController {
             // add text ID to the user's texts array
             const userRepo = new UserRepo()
             const user = await userRepo.retrieveById(userId)
-            if(!user) {
+            if (!user) {
                 res.status(404).json({
                     status: "error",
                     message: "User not found"
                 })
-                return 
+                return
             }
 
-            user.texts = user.texts ? [...user.texts, newText.id]: [newText.id]
+            user.texts = user.texts ? [...user.texts, newText.id] : [newText.id]
             await user.save()
 
             res.status(201).json({
@@ -60,7 +60,7 @@ class TextController {
     }
 
     // update an existing text
-    async updateText(req: Request, res: Response, next: NextFunction) : Promise<void> {
+    async updateText(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const textId = parseInt(req.params.textId);
             const { newTitle, newDescription } = req.body
@@ -88,7 +88,7 @@ class TextController {
             const textRepo = new TextRepo();
             const textToDelete = await textRepo.retrieveTextById(textId)
 
-            if(!textToDelete) {
+            if (!textToDelete) {
                 res.status(404).json({
                     status: "error",
                     message: "Text not found"
@@ -100,9 +100,9 @@ class TextController {
             const userRepo = new UserRepo();
             const user = await userRepo.retrieveById(textToDelete.userId)
 
-            if(user) {
+            if (user) {
                 // remove he text id from the user's texts array
-                user.texts = user.texts.filter(id => id !==  textId);
+                user.texts = user.texts.filter(id => id !== textId);
                 await user.save();
             }
 
@@ -113,7 +113,7 @@ class TextController {
                 status: "success",
                 message: "Text deleted successfully"
             })
-        } catch (err : any) {
+        } catch (err: any) {
             res.status(500).json({
                 status: "Error",
                 message: err.message || "Internal server error!"
@@ -129,7 +129,7 @@ class TextController {
             const textRepo = new TextRepo()
             const text = await textRepo.retrieveTextById(textId)
 
-            if(!text) {
+            if (!text) {
                 res.status(404).json({
                     status: "error",
                     message: "Text not found!"
@@ -150,13 +150,21 @@ class TextController {
     }
 
     // Retrieve all texts for a user
-    async getTextsByUserId(req: Request, res:Response, next: NextFunction): Promise<void> {
+    async getTextsByUserId(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const existingUser = (req as any).user
-            const userId = existingUser.id
+            const {userId} = req.params
+            console.log("Received userId:", userId, typeof(userId)); 
+
+            if (isNaN(parseInt(userId))) {
+                res.status(400).json({
+                    status: "error",
+                    message: "Invalid user ID provided",
+                });
+                return;
+            }
 
             const textRepo = new TextRepo()
-            const texts = await textRepo.retrieveTextsByUserId(userId)
+            const texts = await textRepo.retrieveTextsByUserId(parseInt(userId))
 
             res.status(200).json({
                 status: "success",

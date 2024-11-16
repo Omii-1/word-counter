@@ -49,11 +49,6 @@ export class UserRepo implements IUserRepo {
                 throw new Error("New password must be different from the old password");
             }
 
-            // Password strength check (minimum 8 characters, etc.)
-            if (newPassword.length < 8) {
-                throw new Error("New password must be at least 8 characters long");
-            }
-
             // Hash the new password
             const hashedPassword = await bcrypt.hash(newPassword, 10);
             existingUser.password = hashedPassword;

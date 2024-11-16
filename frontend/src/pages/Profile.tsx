@@ -1,6 +1,6 @@
 import { Sidebar } from "../components/Sidebar"
-import { Saved } from "../components/Saved"
 import { useEffect, useState } from "react"
+import { Outlet, useParams } from "react-router-dom"
 import axios from "axios"
 
 export function Profile() {
@@ -8,31 +8,32 @@ export function Profile() {
     const backendUrl = import.meta.env.VITE_USER_BACKEND_URL
     const [profile, setProfile] = useState([])
 
+    const { userId } = useParams()
+
     const fetchProfile = async () => {
         const info = await axios.get(`${backendUrl}/get-user`, {
             headers: {
                 Authorization: localStorage.getItem("token")
             }
         })
-        .then( res => res.data.data)
+            .then(res => res.data.data)
         setProfile(info)
         console.log(profile);
-        
+
     }
 
     useEffect(() => {
         fetchProfile()
     }, [])
 
-    // Handler to refresh data after deletion
-    const handleDataUpdate = () => {
-        fetchProfile()
-    }
-
     return (
-        <div className="flex w-full h-full">
-            <Sidebar data={profile} />
-            <Saved data = {profile.textsList} onDataUpdate={handleDataUpdate} />
+        <div className="flex w-full min-h-[80vh] items-center">
+            <div className="w-1/4" >
+                <Sidebar data={profile} userId={userId} />
+            </div>
+            <div className="w-3/4 p-4">
+                <Outlet/>
+            </div>
         </div>
     )
 }

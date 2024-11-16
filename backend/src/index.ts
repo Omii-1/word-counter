@@ -18,7 +18,7 @@ class App {
         this.app.use(cors({
             origin: "http://localhost:5173", // Allow requests from your frontend
             methods: ["GET", "POST", "PUT", "DELETE", "PATCH"], // Allow methods
-            allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
+            allowedHeaders: ["Content-Type", "Authorization", "userId"], // Allowed headers
         }));
         this.app.use(express.json())
         this.app.use(express.urlencoded({ extended: true }))

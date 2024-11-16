@@ -1,5 +1,5 @@
 import { useSelector } from "react-redux"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, Link } from "react-router-dom"
 
 export function Navbar() {
 
@@ -15,10 +15,10 @@ export function Navbar() {
 
             {
                 isLoggedIn ? (
-                    <div className="flex ">
+                    <Link to={`/profile/${localStorage.getItem("id")}`} className="flex ">
                         <button className="border bg-blue-500 text-white py-2 px-4 rounded-lg shadow hover:bg-blue-600 transition duration-300 ease-in-out "
-                        onClick={() => navigate("profile")}>Profile</button>
-                    </div>
+                        >Profile</button>
+                    </Link>
 
                 ) : (
                     <div className="flex gap-2">

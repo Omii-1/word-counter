@@ -19,7 +19,7 @@ class TextRoutes extends BaseRoutes {
         this.router.get("/get/:textId", authenticationToken, validate(getTextByIdSchema) as any, TextController.getTextById);
 
         // Route for retrieving all texts by a user (protected route)
-        this.router.get("/user-texts", authenticationToken, TextController.getTextsByUserId);
+        this.router.get("/user-texts/:userId", authenticationToken, TextController.getTextsByUserId);
     }
 }
 

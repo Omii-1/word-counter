@@ -1,36 +1,22 @@
 import { MdDeleteOutline } from "react-icons/md";
 import { MdLogout } from "react-icons/md";
-import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
-import { deleteText } from "../services/textService";
+import { deleteText, GetAllTextItem, getAllText } from "../services/textService";
 
-interface DataItem {
-    id: number;
-    userId: number;
-    title: string;
-    description: string;
-    createdAt: string;
-    updatedAt: string;
-}
+export function Saved() {
 
-interface SavedProps {
-    data: DataItem[]; 
-    onDataUpdate: () => void;
-}
-
-export function Saved({data, onDataUpdate}: SavedProps) {
-
-    const navigate = useNavigate()
     const [isDeleting, setIsDeleting] = useState(false)
-
+    const [texts, setTexts] = useState<GetAllTextItem[]>([])
+    const navigate = useNavigate()
 
     const handleDelete = async (id: number) => {
         if (isDeleting) return; // Prevent multiple clicks
 
         try {
             setIsDeleting(true)
-            await deleteText({id})
+            await deleteText({ id })
             onDataUpdate() // Refresh the data after successful deletion
         } catch (error) {
             console.error("Error deleting text:", error)
@@ -39,44 +25,84 @@ export function Saved({data, onDataUpdate}: SavedProps) {
         }
     }
 
+    function formatDate(dateString: string): string {
+        const date = new Date(dateString);
+
+        // Extract hours and minutes, ensuring two-digit format
+        const hours = date.getUTCHours().toString().padStart(2, '0');
+        const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+
+        // Extract day, month and year
+        const day = date.getUTCDate();
+        const year = date.getUTCFullYear();
+
+        // Month names array for conversion to string
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const month = monthNames[date.getUTCMonth()];
+
+        return `${hours}:${minutes} ${day} ${month} ${year}`;
+    }
+
+    const handleGetText = (id: number) => {
+        // Navigate to the home page with the text ID as a parameter
+        navigate(`/${id}`);
+    };
+
+    const {userId} = useParams()
+    useEffect(() => {
+        const fetchData = async () => {
+            if (userId) {
+                try {
+                    const data = await getAllText(userId);
+                    if (data && data.texts) {
+                        setTexts(data.texts);
+                    } else {
+                        setTexts([]);
+                    }
+                } catch (error) {
+                    console.error("Error fetching texts by user ID:", error);
+                    setTexts([]);
+                }
+            }
+        };
+        fetchData();
+    }, [userId]);
+
     return (
-        <div className="border-l border-blue-500 w-[75%] min-h-[590px] p-4">
+        <div className="h-[80vh]">
 
-            <h1 className="text-blue-500 text-4xl font-bold">Saved Data</h1>
+            <h1 className="text-blue-500 text-5xl font-bold">Saved Data</h1>
 
-            <div className="py-4 w-full flex flex-col gap-5 justify-center items-center">
+            <div className="py-4 flex flex-col gap-5 justify-center items-center">
 
                 {
-                    data && data.length > 0 ? (
-                        data.map((item) => (
-                            <div key={item.id} className="border flex shadow-lg px-2 py-3 pcursor-pointer rounded bg-gray-100 w-full gap-2">
-                                <div className="flex gap-4 text-center w-4/5 justify-between">
+                    texts && texts.length > 0 ? (
+                        texts.map((item) => (
+                            <div key={item.id} className="border flex shadow-lg px-2 py-3 rounded bg-gray-100 w-full justify-between">
+                                <div className="flex gap-4 text-center w-3/4 justify-around">
                                     <div>
                                         <label htmlFor="" className="text-blue-500">Date</label>
-                                        <p>{item.updatedAt}</p>
+                                        <p>{formatDate(item.updatedAt)}</p>
                                     </div>
-                                    {/* <div>
-                                        <label htmlFor="" className="text-blue-500">Username</label>
-                                        <p>{item.userName}</p>
-                                    </div> */}
                                     <div>
                                         <label htmlFor="" className="text-blue-500">Title</label>
                                         <p>{item.title}</p>
                                     </div>
                                 </div>
-                                <div className="flex gap-2 w-1/5 justify-end">
-                                    <button 
-                                    className="border rounded text-blue-500 border-blue-500 hover:bg-blue-500 hover:text-white px-1 transition-all duration-300"><MdLogout size={25} />
+                                <div className="flex gap-2 w-1/4 justify-around ">
+                                    <button
+                                        onClick={() => handleGetText(item.id)}
+                                        className="border rounded text-blue-500 border-blue-500 hover:bg-blue-500 hover:text-white px-1 transition-all duration-300"><MdLogout size={25} />
                                     </button>
-                                    <button 
-                                    onClick={ () => handleDelete(item.id)}className="border rounded text-red-500 border-red-500 hover:bg-red-500 hover:text-white px-1 transition-all duration-300"><MdDeleteOutline size={25} />
+                                    <button
+                                        onClick={() => handleDelete(item.id)} className="border rounded text-red-500 border-red-500 hover:bg-red-500 hover:text-white px-1 transition-all duration-300"><MdDeleteOutline size={25} />
                                     </button>
                                 </div>
-    
+
                             </div>
                         ))
                     ) : (
-                        <p className="text-gray-500">No saved data available.</p>
+                        <p className="text-gray-500 text-4xl flex justify-center items-center h-[80vh]">No saved data available.</p>
                     )
                 }
             </div>

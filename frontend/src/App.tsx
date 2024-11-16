@@ -10,6 +10,8 @@ import {Home} from "./pages/Home"
 import {Signup} from "./pages/Signup"
 import {Signin} from "./pages/Signin"
 import {Profile} from "./pages/Profile"
+import { Saved } from "./components/Saved";
+import { ChangePassword } from "./components/ChangePassword"
 
 function App(): JSX.Element {
 
@@ -33,11 +35,15 @@ function App(): JSX.Element {
       <div className={`flex-grow p-4 ${needsCenter ? 'flex items-center justify-center' : ''}`}>
         <Routes>
           <Route path="/" element={ <Home />} />
+          <Route path="/:textId" element={ <Home />} />
           <Route path="/signup" element={ <Signup />} />
           <Route path="/signin" element={ <Signin />} />
-          <Route path="/profile" element={ <Profile />}>
+          <Route path="/profile/:userId" element={ <Profile />}>
             {
-              role === "user" ? <></> : <></>
+              role === "user" ? <>
+                <Route index element={<Saved />} />
+                <Route path="change-password" element={<ChangePassword />} />
+              </> : <></>
             }
           </Route>
         </Routes>

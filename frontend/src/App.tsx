@@ -12,6 +12,7 @@ import {Signin} from "./pages/Signin"
 import {Profile} from "./pages/Profile"
 import { Saved } from "./components/Saved";
 import { ChangePassword } from "./components/ChangePassword"
+import { AllUsers } from "./components/AllUsers";
 
 function App(): JSX.Element {
 
@@ -43,7 +44,11 @@ function App(): JSX.Element {
               role === "user" ? <>
                 <Route index element={<Saved />} />
                 <Route path="change-password" element={<ChangePassword />} />
-              </> : <></>
+              </> : <>
+                <Route index element={<Saved />} />
+                <Route path="all-users" element={<AllUsers />} />
+                <Route path="change-password" element={<ChangePassword />} />
+              </>
             }
           </Route>
         </Routes>

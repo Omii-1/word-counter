@@ -52,7 +52,9 @@ export function Sidebar({ data, userId }) {
                         </h2>
                     </div>
                 </div>
-                <div className="flex flex-col justify-center items-center gap-3 mt-4">
+                {
+                    role === "user" ? ( 
+                        <div className="flex flex-col justify-center items-center gap-3 mt-4">
                     <Link
                         to="/profile"
                         className="border bg-blue-500 text-white py-2 px-4 rounded-lg shadow hover:bg-blue-600 transition duration-300 ease-in-out flex gap-2 w-full text-center items-center justify-center"
@@ -78,6 +80,41 @@ export function Sidebar({ data, userId }) {
                         Logout <MdLogout size={25} />
                     </button>
                 </div>
+                    ) : (
+                    <div className="flex flex-col justify-center items-center gap-3 mt-4">
+                        <Link
+                            to={`/profile/${userId}`}
+                            className="border bg-blue-500 text-white py-2 px-4 rounded-lg shadow hover:bg-blue-600 transition duration-300 ease-in-out flex gap-2 w-full text-center items-center justify-center"
+                        >
+                            Saved Data
+                        </Link>
+                        <Link
+                            to={`/profile/${userId}/all-users`}
+                            className="border bg-blue-500 text-white py-2 px-4 rounded-lg shadow hover:bg-blue-600 transition duration-300 ease-in-out flex gap-2 w-full text-center items-center justify-center"
+                        >
+                            All Users
+                        </Link>
+                        <Link
+                            to= {`/profile/${userId}/change-password`}
+                            className="border bg-blue-500 text-white py-2 px-4 rounded-lg shadow hover:bg-blue-600 transition duration-300 ease-in-out flex gap-2 w-full text-center items-center justify-center"
+                        >
+                            Change Password
+                        </Link>
+                        <button
+                            onClick={() => setShowConfirmDelete(true)}
+                            className="border bg-blue-500 text-white py-2 px-4 rounded-lg shadow hover:bg-blue-600 transition duration-300 ease-in-out flex gap-2 w-full text-center items-center justify-center"
+                        >
+                            Delete Account
+                        </button>
+                        <button
+                            className="border bg-blue-500 text-white py-2 px-4 rounded-lg shadow hover:bg-blue-600 transition duration-300 ease-in-out flex gap-2 w-full text-center items-center justify-center"
+                            onClick={handleLogout}
+                        >
+                            Logout <MdLogout size={25} />
+                        </button>
+                    </div>
+                    )
+                }
             </div>
             {
                 showConfirmDelete && (

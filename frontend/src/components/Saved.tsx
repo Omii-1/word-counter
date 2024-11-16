@@ -4,12 +4,28 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { deleteText, GetAllTextItem, getAllText } from "../services/textService";
-
+import { formatDate } from "../services/userServices";
 export function Saved() {
 
     const [isDeleting, setIsDeleting] = useState(false)
     const [texts, setTexts] = useState<GetAllTextItem[]>([])
     const navigate = useNavigate()
+
+    const fetchData = async () => {
+        if (userId) {
+            try {
+                const data = await getAllText(userId);
+                if (data && data.texts) {
+                    setTexts(data.texts);
+                } else {
+                    setTexts([]);
+                }
+            } catch (error) {
+                console.error("Error fetching texts by user ID:", error);
+                setTexts([]);
+            }
+        }
+    };
 
     const handleDelete = async (id: number) => {
         if (isDeleting) return; // Prevent multiple clicks
@@ -17,30 +33,12 @@ export function Saved() {
         try {
             setIsDeleting(true)
             await deleteText({ id })
-            onDataUpdate() // Refresh the data after successful deletion
+            await fetchData()
         } catch (error) {
             console.error("Error deleting text:", error)
         } finally {
             setIsDeleting(false)
         }
-    }
-
-    function formatDate(dateString: string): string {
-        const date = new Date(dateString);
-
-        // Extract hours and minutes, ensuring two-digit format
-        const hours = date.getUTCHours().toString().padStart(2, '0');
-        const minutes = date.getUTCMinutes().toString().padStart(2, '0');
-
-        // Extract day, month and year
-        const day = date.getUTCDate();
-        const year = date.getUTCFullYear();
-
-        // Month names array for conversion to string
-        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-        const month = monthNames[date.getUTCMonth()];
-
-        return `${hours}:${minutes} ${day} ${month} ${year}`;
     }
 
     const handleGetText = (id: number) => {
@@ -50,21 +48,6 @@ export function Saved() {
 
     const {userId} = useParams()
     useEffect(() => {
-        const fetchData = async () => {
-            if (userId) {
-                try {
-                    const data = await getAllText(userId);
-                    if (data && data.texts) {
-                        setTexts(data.texts);
-                    } else {
-                        setTexts([]);
-                    }
-                } catch (error) {
-                    console.error("Error fetching texts by user ID:", error);
-                    setTexts([]);
-                }
-            }
-        };
         fetchData();
     }, [userId]);
 

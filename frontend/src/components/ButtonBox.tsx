@@ -1,16 +1,16 @@
-// ButtonBox.tsx
-
 import React from "react";
+import { SpeechControls } from "./SpeechControls";
 
 interface ButtonBoxProps {
     onSaveClick: () => void;
     onClearClick: () => void;
     onDownloadClick: () => void;
     onExtractText: (event: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
-    textId: number | null
+    textId: number | null;
+    text: string;
 }
 
-export function ButtonBox({ onSaveClick, onClearClick, onDownloadClick, onExtractText, textId }: ButtonBoxProps) {
+export function ButtonBox({ onSaveClick, onClearClick, onDownloadClick, onExtractText, textId, text }: ButtonBoxProps) {
 
     const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -44,13 +44,17 @@ export function ButtonBox({ onSaveClick, onClearClick, onDownloadClick, onExtrac
                 className="hidden"
             />
             {allButtons.map((button, index) => (
-                <button
-                    key={index}
-                    onClick={() => onClickHandler(button)}
-                    className="border bg-blue-500 text-white py-2 px-4 rounded-lg shadow hover:bg-blue-600 transition duration-300 ease-in-out"
-                >
-                    {button}
-                </button>
+                button === "Read" ? (
+                    <SpeechControls key={index} text={text} />
+                ) : (
+                    <button
+                        key={index}
+                        onClick={() => onClickHandler(button)}
+                        className="border bg-blue-500 text-white py-2 px-4 rounded-lg shadow hover:bg-blue-600 transition duration-300 ease-in-out"
+                    >
+                        {button}
+                    </button>
+                )
             ))}
         </div>
     );

@@ -164,7 +164,7 @@ export function Home() {
 
       {/* Buttons and TextArea Section */}
       <div className="flex gap-4 h-[75%]">
-        <ButtonBox onSaveClick={handleSaveClick} onClearClick={handleClearClick} onDownloadClick={handleDownloadClick} onExtractText={handleExtractText} textId={textId ? parseInt(textId) : null} />
+        <ButtonBox onSaveClick={handleSaveClick} onClearClick={handleClearClick} onDownloadClick={handleDownloadClick} onExtractText={handleExtractText} textId={textId ? parseInt(textId) : null} text={description} />
         <div className="flex-1">
           <TextBox text={description} setText={setDescription} />
         </div>

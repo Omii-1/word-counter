@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { useSelector } from 'react-redux';
 import { useParams, useNavigate } from 'react-router-dom';
+import { Document, Page, Text, pdf, View } from '@react-pdf/renderer';
+import pdfToText from 'react-pdftotext'
+
 
 import { TextBox } from '../components/TextBox';
 import { OutputBox } from '../components/OutputBox';
@@ -75,7 +78,7 @@ export function Home() {
         if (result) {
           setTitle(result.title);
           setDescription(result.description);
-          setIsUpdating(true); 
+          setIsUpdating(true);
         } else {
           toast.error('Failed to fetch the text details.');
         }
@@ -92,22 +95,67 @@ export function Home() {
   };
 
   // Function to handle save
-  const handleSave = async () => {    
+  const handleSave = async () => {
     const response = await saveText({ title, description });
     if (response && response.textId) {
-        setShowTitleModal(false);
-        navigate(`/${response.textId}`);
-    } 
-};
+      setShowTitleModal(false);
+      navigate(`/${response.textId}`);
+    }
+  };
 
   // Function to handle update
   const handleUpdate = async () => {
     if (textId) {
-        await UpdateText({ id: parseInt(textId), title, description });
-        setShowTitleModal(false);
+      await UpdateText({ id: parseInt(textId), title, description });
+      setShowTitleModal(false);
     }
   };
 
+  // function to create pdf
+  const handleDownloadClick = async () => {
+    const doc = (
+      <Document>
+        <Page size="A4" style={{ paddingBottom: 30 }}> {/* Ensure bottom padding */}
+          <View style={{ padding: 20, flexGrow: 1 }}> {/* Adjust View for spacing */}
+            <Text>{description}</Text>
+          </View>
+        </Page>
+      </Document>
+    );
+
+    const blob = await pdf(doc).toBlob();
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'document.pdf';
+    link.click();
+  };
+
+  // function to extract text
+  const handleExtractText = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      toast.error('No file selected');
+      return;
+    }
+  
+    try {
+      const extractedText = await pdfToText(file);
+      if (!extractedText || extractedText.trim().length === 0) {
+        toast.error('No text content found in the PDF');
+        return;
+      }
+      setDescription(extractedText)
+      toast.success('Text extracted successfully from PDF');  
+    } catch (error) {
+      console.error('Error extracting text from PDF:', error);
+      if (error instanceof Error) {
+        toast.error(`Failed to extract text: ${error.message}`);
+      } else {
+        toast.error('Failed to extract text from PDF');
+      }
+    }
+    event.target.value = '';
+  };
 
   return (
     <div className="p-4 w-full max-w-[70%] h-[70vh] bg-gray-100 rounded-lg shadow-lg mx-auto mt-12 overflow-y-auto">
@@ -116,7 +164,7 @@ export function Home() {
 
       {/* Buttons and TextArea Section */}
       <div className="flex gap-4 h-[75%]">
-        <ButtonBox onSaveClick={handleSaveClick} onClearClick={handleClearClick} textId={textId ? parseInt(textId) : null} />
+        <ButtonBox onSaveClick={handleSaveClick} onClearClick={handleClearClick} onDownloadClick={handleDownloadClick} onExtractText={handleExtractText} textId={textId ? parseInt(textId) : null} />
         <div className="flex-1">
           <TextBox text={description} setText={setDescription} />
         </div>
@@ -128,7 +176,7 @@ export function Home() {
           setTitle={setTitle}
           onSave={isUpdating ? handleUpdate : handleSave} // Conditional onSave handler
           onClose={() => setShowTitleModal(false)}
-          isUpdating = {isUpdating}
+          isUpdating={isUpdating}
         />
       )}
     </div>

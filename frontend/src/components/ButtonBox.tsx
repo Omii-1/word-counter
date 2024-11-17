@@ -1,34 +1,52 @@
 // ButtonBox.tsx
 
+import React from "react";
 
 interface ButtonBoxProps {
     onSaveClick: () => void;
     onClearClick: () => void;
-    textId : number | null
+    onDownloadClick: () => void;
+    onExtractText: (event: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
+    textId: number | null
 }
 
-export function ButtonBox({ onSaveClick, onClearClick, textId }: ButtonBoxProps) {
+export function ButtonBox({ onSaveClick, onClearClick, onDownloadClick, onExtractText, textId }: ButtonBoxProps) {
+
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
 
     const allButtons: string[] = textId ? ["Update", "Upload", "Download", "Clear", "Read", "Spell Check"] : ["Save", "Upload", "Download", "Clear", "Read", "Spell Check"];
 
     const onClickHandler = (button: string) => {
-        console.log(button);
-        
-        if (button.toLowerCase() === "save" || button.toLowerCase() === "update") {
-            onSaveClick();
-        } else if (button.toLowerCase() === "clear") {
-            onClearClick();
-        } else {
-            return undefined;
+        switch (button.toLowerCase()) {
+            case "save":
+            case "update":
+                onSaveClick();
+                break;
+            case "clear":
+                onClearClick();
+                break;
+            case "download":
+                onDownloadClick();
+                break;
+            case "upload":
+                fileInputRef.current?.click();
+                break;
         }
     };
 
     return (
         <div className="flex flex-col gap-2 justify-between">
+            <input
+                type="file"
+                ref={fileInputRef}
+                accept="application/pdf"
+                onChange={onExtractText}
+                className="hidden"
+            />
             {allButtons.map((button, index) => (
                 <button
                     key={index}
-                    onClick={ () => onClickHandler(button)}
+                    onClick={() => onClickHandler(button)}
                     className="border bg-blue-500 text-white py-2 px-4 rounded-lg shadow hover:bg-blue-600 transition duration-300 ease-in-out"
                 >
                     {button}

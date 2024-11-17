@@ -9,8 +9,8 @@ export function Navbar() {
     const role = useSelector( (state) => state.auth.role)
 
     return (
-        <div className="flex justify-between px-6 py-4 shadow-lg">
-            <h1 className="text-blue-500 text-3xl font-bold cursor-pointer"
+        <div className="flex justify-between px-6 py-4 shadow-lg items-center">
+            <h1 className="text-blue-500 text-xl md:text-2xl lg:text-3xl font-bold cursor-pointer"
             onClick={ () => navigate("/")}>WordCounter.io</h1>
 
             {

@@ -137,7 +137,7 @@ export function Home() {
       toast.error('No file selected');
       return;
     }
-  
+
     try {
       const extractedText = await pdfToText(file);
       if (!extractedText || extractedText.trim().length === 0) {
@@ -145,7 +145,7 @@ export function Home() {
         return;
       }
       setDescription(extractedText)
-      toast.success('Text extracted successfully from PDF');  
+      toast.success('Text extracted successfully from PDF');
     } catch (error) {
       console.error('Error extracting text from PDF:', error);
       if (error instanceof Error) {
@@ -157,6 +157,14 @@ export function Home() {
     event.target.value = '';
   };
 
+  const [isSpellChecking, setIsSpellChecking] = useState(false);
+
+  // Handler for spell check button click
+  const handleSpellCheck = () => {
+    setIsSpellChecking(prev => !prev); // Toggle spell checking
+  };
+
+
   return (
     <div className="p-4 w-full max-w-[70%] h-[70vh] bg-gray-100 rounded-lg shadow-lg mx-auto mt-12 overflow-y-auto">
       {/* Output Section */}
@@ -164,9 +172,19 @@ export function Home() {
 
       {/* Buttons and TextArea Section */}
       <div className="flex gap-4 h-[75%]">
-        <ButtonBox onSaveClick={handleSaveClick} onClearClick={handleClearClick} onDownloadClick={handleDownloadClick} onExtractText={handleExtractText} textId={textId ? parseInt(textId) : null} text={description} />
+        <ButtonBox onSaveClick={handleSaveClick}
+          onClearClick={handleClearClick}
+          onDownloadClick={handleDownloadClick}
+          onExtractText={handleExtractText}
+          textId={textId ? parseInt(textId) : null}
+          text={description}
+          onSpellCheck={handleSpellCheck}
+          isSpellChecking={isSpellChecking} />
         <div className="flex-1">
-          <TextBox text={description} setText={setDescription} />
+          <TextBox text={description} 
+                        setText={setDescription} 
+                        isSpellChecking={isSpellChecking}
+                        setIsSpellChecking={setIsSpellChecking} />
         </div>
       </div>
 

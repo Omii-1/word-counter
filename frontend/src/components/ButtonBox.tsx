@@ -1,3 +1,4 @@
+// ButtonBox.tsx
 import React from "react";
 import { SpeechControls } from "./SpeechControls";
 
@@ -6,16 +7,39 @@ interface ButtonBoxProps {
     onClearClick: () => void;
     onDownloadClick: () => void;
     onExtractText: (event: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
+    onSpellCheck: () => void;
+    isSpellChecking: boolean;
     textId: number | null;
     text: string;
 }
 
-export function ButtonBox({ onSaveClick, onClearClick, onDownloadClick, onExtractText, textId, text }: ButtonBoxProps) {
-
+export function ButtonBox({
+    onSaveClick,
+    onClearClick,
+    onDownloadClick,
+    onExtractText,
+    onSpellCheck,
+    isSpellChecking,
+    textId,
+    text
+}: ButtonBoxProps) {
     const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-    const allButtons: string[] = textId ? ["Update", "Upload", "Download", "Clear", "Read", "Spell Check"] : ["Save", "Upload", "Download", "Clear", "Read", "Spell Check"];
+    // Define available buttons based on whether we're editing existing text
+    const allButtons: string[] = textId
+        ? ["Update", "Upload", "Download", "Clear", "Read", "Spell Check"]
+        : ["Save", "Upload", "Download", "Clear", "Read", "Spell Check"];
 
+    // Common button styles
+    const buttonStyles = {
+        base: `
+            border bg-blue-500 text-white py-2 px-4 rounded-lg shadow 
+            hover:bg-blue-600 transition duration-300 ease-in-out
+            disabled:bg-gray-400 disabled:cursor-not-allowed
+        `
+    };
+
+    // Handle button clicks
     const onClickHandler = (button: string) => {
         switch (button.toLowerCase()) {
             case "save":
@@ -30,6 +54,9 @@ export function ButtonBox({ onSaveClick, onClearClick, onDownloadClick, onExtrac
                 break;
             case "upload":
                 fileInputRef.current?.click();
+                break;
+            case "spell check":
+                onSpellCheck();
                 break;
         }
     };
@@ -50,7 +77,8 @@ export function ButtonBox({ onSaveClick, onClearClick, onDownloadClick, onExtrac
                     <button
                         key={index}
                         onClick={() => onClickHandler(button)}
-                        className="border bg-blue-500 text-white py-2 px-4 rounded-lg shadow hover:bg-blue-600 transition duration-300 ease-in-out"
+                        className={buttonStyles.base}
+                        disabled={button === "Spell Check" && !text.trim()}
                     >
                         {button}
                     </button>

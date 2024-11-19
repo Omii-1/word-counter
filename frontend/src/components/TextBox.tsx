@@ -38,7 +38,6 @@ export function TextBox({ text, setText, isSpellChecking, setIsSpellChecking }: 
                 }
             );
 
-            // Sort errors by offset to maintain consistent ordering
             const matches = response.data.errors
                 .map((error: any) => ({
                     ...error,
@@ -64,7 +63,6 @@ export function TextBox({ text, setText, isSpellChecking, setIsSpellChecking }: 
         setText(newText);
         setSelectedError(null);
 
-        // Recalculate errors after a short delay to allow text update
         setTimeout(() => {
             checkSpelling();
         }, 100);
@@ -73,7 +71,6 @@ export function TextBox({ text, setText, isSpellChecking, setIsSpellChecking }: 
     const handleErrorClick = (error: SpellError, event: React.MouseEvent) => {
         event.stopPropagation();
         
-        // Find the exact error that was clicked by comparing offsets
         const clickedError = errors.find(e => e.offset === error.offset);
         if (!clickedError) return;
         
@@ -84,17 +81,44 @@ export function TextBox({ text, setText, isSpellChecking, setIsSpellChecking }: 
             const lineHeight = parseInt(window.getComputedStyle(textAreaRef.current).lineHeight);
             const textBeforeError = text.substring(0, error.offset);
             const lines = textBeforeError.split('\n').length - 1;
-            
-            // Calculate horizontal position based on error's position in the text
             const charsInLastLine = textBeforeError.split('\n').pop()?.length || 0;
-            const charWidth = 8; // Approximate character width in pixels
-            const horizontalOffset = charsInLastLine * charWidth;
+            const charWidth = 8;
 
             setSuggestionsPosition({
                 top: textareaRect.top + window.scrollY + (lines * lineHeight),
-                left: textareaRect.left + window.scrollX + horizontalOffset
+                left: textareaRect.left + window.scrollX + charsInLastLine * charWidth
             });
         }
+    };
+
+    const HighlightedText = () => {
+        if (!isSpellChecking) return text;
+
+        let result = [];
+        let lastIndex = 0;
+
+        errors.forEach((error, index) => {
+            // Add text before the error
+            result.push(text.substring(lastIndex, error.offset));
+            
+            // Add the error text with red color
+            result.push(
+                <span
+                    key={index}
+                    style={{ color: 'red', cursor: 'pointer' }}
+                    onClick={(e) => handleErrorClick(error, e)}
+                >
+                    {text.substring(error.offset, error.offset + error.length)}
+                </span>
+            );
+            
+            lastIndex = error.offset + error.length;
+        });
+
+        // Add remaining text
+        result.push(text.substring(lastIndex));
+
+        return <div style={{ whiteSpace: 'pre-wrap' }}>{result}</div>;
     };
 
     const SuggestionsList = () => {
@@ -148,61 +172,6 @@ export function TextBox({ text, setText, isSpellChecking, setIsSpellChecking }: 
         );
     };
 
-    const Overlay = () => {
-        if (!isSpellChecking || !textAreaRef.current) return null;
-
-        const textareaStyles = window.getComputedStyle(textAreaRef.current);
-        const lineHeight = parseInt(textareaStyles.lineHeight);
-        const paddingTop = parseInt(textareaStyles.paddingTop);
-
-        return (
-            <div
-                className="spell-check-overlay"
-                style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    pointerEvents: 'none'
-                }}
-            >
-                {errors.map((error, index) => {
-                    const textBeforeError = text.slice(0, error.offset);
-                    const lines = textBeforeError.split('\n').length - 1;
-                    const charsInLastLine = textBeforeError.split('\n').pop()?.length || 0;
-                    const charWidth = 8; // Approximate character width in pixels
-
-                    return (
-                        <div
-                            key={error.id || index}
-                            onClick={(e) => handleErrorClick(error, e)}
-                            style={{
-                                position: 'absolute',
-                                top: `${lines * lineHeight + paddingTop}px`,
-                                left: `${charsInLastLine * charWidth}px`,
-                                width: `${error.length * charWidth}px`,
-                                height: `${lineHeight}px`,
-                                pointerEvents: 'auto',
-                                cursor: 'pointer'
-                            }}
-                        >
-                            <div
-                                style={{
-                                    position: 'absolute',
-                                    bottom: '3px',
-                                    left: 0,
-                                    width: '100%',
-                                    borderBottom: '2px wavy red'
-                                }}
-                            />
-                        </div>
-                    );
-                })}
-            </div>
-        );
-    };
-
     useEffect(() => {
         if (isSpellChecking) {
             checkSpelling();
@@ -214,18 +183,26 @@ export function TextBox({ text, setText, isSpellChecking, setIsSpellChecking }: 
 
     return (
         <div className="relative w-full h-full" onClick={() => setSelectedError(null)}>
-            <textarea
-                ref={textAreaRef}
-                className="w-full h-full p-4 border border-gray-300 rounded-lg focus:outline-none resize-none"
-                value={text}
-                onChange={(e) => {
-                    setText(e.target.value);
-                    setIsSpellChecking(false);
-                }}
-                placeholder="Start typing, or copy and paste your document here..."
-                style={{ fontSize: '16px', lineHeight: '1.5' }}
-            />
-            {isSpellChecking && <Overlay />}
+            {!isSpellChecking ? (
+                <textarea
+                    ref={textAreaRef}
+                    className="w-full h-full p-4 border border-gray-300 rounded-lg focus:outline-none resize-none"
+                    value={text}
+                    onChange={(e) => {
+                        setText(e.target.value);
+                        setIsSpellChecking(false);
+                    }}
+                    placeholder="Start typing, or copy and paste your document here..."
+                    style={{ fontSize: '16px', lineHeight: '1.5' }}
+                />
+            ) : (
+                <div
+                    className="w-full h-full p-4 border border-gray-300 rounded-lg"
+                    style={{ fontSize: '16px', lineHeight: '1.5' }}
+                >
+                    <HighlightedText />
+                </div>
+            )}
             <SuggestionsList />
         </div>
     );
